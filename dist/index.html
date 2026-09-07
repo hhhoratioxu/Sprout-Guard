@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#081c24" />
+    <meta
+      name="description"
+      content="萌芽守卫是一款原创的手机友好型花园塔防网页游戏。收集光能、布置植物守卫，挡住三波暮影怪物。"
+    />
+    <title>萌芽守卫 · Sprout Guard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="萌芽守卫首页">
+          <span class="brand-mark" aria-hidden="true">✦</span>
+          <span>
+            <strong>萌芽守卫</strong>
+            <small>SPROUT GUARD</small>
+          </span>
+        </a>
+
+        <div class="top-actions">
+          <button class="icon-button" id="soundButton" type="button" aria-pressed="true" aria-label="关闭音效">
+            <span aria-hidden="true">♪</span>
+            <span class="button-label">音效</span>
+          </button>
+          <button class="icon-button" id="pauseButton" type="button" aria-label="暂停游戏" disabled>
+            <span id="pauseIcon" aria-hidden="true">Ⅱ</span>
+            <span class="button-label" id="pauseLabel">暂停</span>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="game-panel" aria-label="萌芽守卫游戏">
+          <div class="hud-row">
+            <div class="energy-display" aria-live="polite">
+              <span class="energy-orb-mini" aria-hidden="true"></span>
+              <span>
+                <small>光能</small>
+                <strong id="energyValue">250</strong>
+              </span>
+            </div>
+
+            <div class="wave-status">
+              <div class="wave-copy">
+                <span id="waveLabel">第 1 波</span>
+                <span>得分 <strong id="scoreValue">0</strong></span>
+              </div>
+              <div class="progress-track" aria-label="关卡进度">
+                <span id="progressFill"></span>
+                <i class="wave-notch notch-one" aria-hidden="true"></i>
+                <i class="wave-notch notch-two" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <div class="best-display">
+              <small>最佳</small>
+              <strong id="bestValue">0</strong>
+            </div>
+          </div>
+
+          <div class="plant-tray" aria-label="守卫卡片">
+            <button class="plant-card" data-plant="sunbloom" type="button" aria-pressed="false">
+              <span class="card-sprite sprite-crop plant-atlas atlas-tl" aria-hidden="true"><img src="assets/defenders.png" alt="" /></span>
+              <span class="card-copy"><strong>阳光花</strong><small>持续产出光能</small></span>
+              <span class="card-cost"><i class="energy-orb-tiny"></i>50</span>
+              <span class="cooldown-cover" aria-hidden="true"></span>
+            </button>
+            <button class="plant-card" data-plant="podshot" type="button" aria-pressed="false">
+              <span class="card-sprite sprite-crop plant-atlas atlas-tr" aria-hidden="true"><img src="assets/defenders.png" alt="" /></span>
+              <span class="card-copy"><strong>豆荚炮</strong><small>发射高速种子</small></span>
+              <span class="card-cost"><i class="energy-orb-tiny"></i>100</span>
+              <span class="cooldown-cover" aria-hidden="true"></span>
+            </button>
+            <button class="plant-card" data-plant="barkguard" type="button" aria-pressed="false">
+              <span class="card-sprite sprite-crop plant-atlas atlas-bl" aria-hidden="true"><img src="assets/defenders.png" alt="" /></span>
+              <span class="card-copy"><strong>木灵卫</strong><small>坚固的前排屏障</small></span>
+              <span class="card-cost"><i class="energy-orb-tiny"></i>75</span>
+              <span class="cooldown-cover" aria-hidden="true"></span>
+            </button>
+            <button class="plant-card" data-plant="frostfern" type="button" aria-pressed="false">
+              <span class="card-sprite sprite-crop plant-atlas atlas-br" aria-hidden="true"><img src="assets/defenders.png" alt="" /></span>
+              <span class="card-copy"><strong>冰晶蕨</strong><small>减慢怪物脚步</small></span>
+              <span class="card-cost"><i class="energy-orb-tiny"></i>150</span>
+              <span class="cooldown-cover" aria-hidden="true"></span>
+            </button>
+            <button class="plant-card tool-card" id="shovelButton" type="button" aria-pressed="false">
+              <span class="tool-icon" aria-hidden="true">⌁</span>
+              <span class="card-copy"><strong>移除</strong><small>收起一株守卫</small></span>
+            </button>
+          </div>
+
+          <div class="board-wrap">
+            <div id="board" class="board" aria-label="5 行 8 列的花园战场">
+              <div class="moon-glow" aria-hidden="true"></div>
+              <div id="cellLayer" class="cell-layer"></div>
+              <div id="safetyLayer" class="safety-layer" aria-hidden="true"></div>
+              <div id="entityLayer" class="entity-layer"></div>
+              <div class="board-shade" aria-hidden="true"></div>
+
+              <div class="game-overlay is-visible" id="gameOverlay" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
+                <div class="overlay-card">
+                  <span class="overlay-kicker" id="overlayKicker">暮色降临</span>
+                  <h1 id="overlayTitle">守住今晚的花园</h1>
+                  <p id="overlayText">收集发光种子，选择守卫，再轻点草地完成布置。挡住三波暮影怪物就能获胜。</p>
+                  <div class="overlay-tips" id="overlayTips">
+                    <span><b>1–4</b> 选择守卫</span>
+                    <span><b>空格</b> 暂停</span>
+                    <span><b>✦</b> 点击收集</span>
+                  </div>
+                  <button class="primary-button" id="overlayButton" type="button">开始守卫</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <footer class="game-footer">
+            <p id="gameHint">先选择一张守卫卡，再点击草地放置。</p>
+            <p class="credit">原创网页塔防游戏 · 代码与角色均为独立创作</p>
+          </footer>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="game.js" defer></script>
+  </body>
+</html>
