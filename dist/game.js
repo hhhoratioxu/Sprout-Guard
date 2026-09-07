@@ -6,6 +6,7 @@
   const LEVEL_DURATION = 88;
   const STARTING_ENERGY = 250;
   const STORAGE_KEY = "sprout-guard-best-score";
+  const WALK_FRAMES = ["atlas-tl", "atlas-tr", "atlas-bl", "atlas-br"];
 
   const PLANTS = {
     sunbloom: {
@@ -14,6 +15,7 @@
       cooldown: 4,
       maxHp: 145,
       atlas: "atlas-tl",
+      sheet: "assets/defenders.png",
       actionEvery: 7.2,
     },
     podshot: {
@@ -22,6 +24,7 @@
       cooldown: 5,
       maxHp: 155,
       atlas: "atlas-tr",
+      sheet: "assets/defenders.png",
       actionEvery: 1.25,
       damage: 24,
     },
@@ -31,6 +34,7 @@
       cooldown: 8,
       maxHp: 620,
       atlas: "atlas-bl",
+      sheet: "assets/defenders.png",
     },
     frostfern: {
       name: "冰晶蕨",
@@ -38,8 +42,49 @@
       cooldown: 10,
       maxHp: 170,
       atlas: "atlas-br",
+      sheet: "assets/defenders.png",
       actionEvery: 1.85,
       damage: 15,
+    },
+    burstberry: {
+      name: "爆裂莓",
+      cost: 125,
+      cooldown: 8,
+      maxHp: 150,
+      atlas: "atlas-tl",
+      sheet: "assets/defenders-extra.png",
+      actionEvery: 2.35,
+      damage: 42,
+      splash: 20,
+    },
+    twinstar: {
+      name: "双星芽",
+      cost: 175,
+      cooldown: 9,
+      maxHp: 150,
+      atlas: "atlas-tr",
+      sheet: "assets/defenders-extra.png",
+      actionEvery: 1.7,
+      damage: 20,
+    },
+    thorntrap: {
+      name: "荆棘垫",
+      cost: 50,
+      cooldown: 7,
+      maxHp: 85,
+      atlas: "atlas-bl",
+      sheet: "assets/defenders-extra.png",
+      trapDamage: 230,
+    },
+    dewleaf: {
+      name: "露珠叶",
+      cost: 125,
+      cooldown: 9,
+      maxHp: 165,
+      atlas: "atlas-br",
+      sheet: "assets/defenders-extra.png",
+      actionEvery: 5.2,
+      heal: 55,
     },
   };
 
@@ -50,7 +95,8 @@
       speed: 0.245,
       damage: 43,
       points: 100,
-      atlas: "atlas-tl",
+      sheet: "assets/walk-mothcap.png",
+      stepRate: 6.8,
     },
     mossling: {
       name: "苔靴怪",
@@ -58,7 +104,8 @@
       speed: 0.42,
       damage: 31,
       points: 125,
-      atlas: "atlas-tr",
+      sheet: "assets/walk-mossling.png",
+      stepRate: 9.4,
     },
     stonebrute: {
       name: "藤石巨怪",
@@ -66,7 +113,35 @@
       speed: 0.145,
       damage: 78,
       points: 300,
-      atlas: "atlas-bl",
+      sheet: "assets/walk-stonebrute.png",
+      stepRate: 4.6,
+    },
+    lanternbug: {
+      name: "灯甲虫",
+      maxHp: 145,
+      speed: 0.285,
+      damage: 37,
+      points: 165,
+      sheet: "assets/walk-lanternbug.png",
+      stepRate: 8.2,
+    },
+    twigstalker: {
+      name: "枝影怪",
+      maxHp: 95,
+      speed: 0.31,
+      damage: 55,
+      points: 175,
+      sheet: "assets/walk-twigstalker.png",
+      stepRate: 7.6,
+    },
+    acornram: {
+      name: "壳角兽",
+      maxHp: 225,
+      speed: 0.195,
+      damage: 68,
+      points: 240,
+      sheet: "assets/walk-acornram.png",
+      stepRate: 5.5,
     },
   };
 
@@ -199,7 +274,7 @@
     updateCards();
     hideOverlay();
     pauseButton.disabled = false;
-    setHint("选择一张守卫卡，再点击草地放置。键盘可按 1–4 快速选择。");
+    setHint("选择一张守卫卡，再点击草地放置。键盘可按 1–8 快速选择。");
     playTone(520, 0.12, "sine", 0.05);
     animationFrame = requestAnimationFrame(gameLoop);
   }
@@ -222,7 +297,11 @@
     state.elapsed = Math.min(LEVEL_DURATION, state.elapsed + dt);
     state.wave = state.elapsed < 27 ? 1 : state.elapsed < 58 ? 2 : 3;
     if (state.wave !== previousWave) {
-      showToast(state.wave === 2 ? "第二波来袭：苔靴怪加入战场" : "最终波来袭：小心藤石巨怪");
+      showToast(
+        state.wave === 2
+          ? "第二波来袭：灯甲虫和枝影怪加入战场"
+          : "最终波来袭：藤石巨怪和壳角兽逼近",
+      );
       playTone(state.wave === 2 ? 360 : 280, 0.24, "sawtooth", 0.035);
     }
 
@@ -263,9 +342,22 @@
 
   function chooseEnemyType() {
     const roll = Math.random();
-    if (state.wave === 1) return roll < 0.84 ? "mothcap" : "mossling";
-    if (state.wave === 2) return roll < 0.57 ? "mothcap" : roll < 0.89 ? "mossling" : "stonebrute";
-    return roll < 0.39 ? "mothcap" : roll < 0.73 ? "mossling" : "stonebrute";
+    if (state.wave === 1) {
+      return roll < 0.7 ? "mothcap" : "mossling";
+    }
+    if (state.wave === 2) {
+      if (roll < 0.3) return "mothcap";
+      if (roll < 0.52) return "mossling";
+      if (roll < 0.7) return "twigstalker";
+      if (roll < 0.86) return "lanternbug";
+      return "acornram";
+    }
+    if (roll < 0.18) return "mothcap";
+    if (roll < 0.36) return "mossling";
+    if (roll < 0.52) return "twigstalker";
+    if (roll < 0.7) return "lanternbug";
+    if (roll < 0.84) return "acornram";
+    return "stonebrute";
   }
 
   function updatePlants(dt) {
@@ -284,6 +376,32 @@
         return;
       }
 
+      if (plant.type === "dewleaf") {
+        const target = state.plants
+          .filter(
+            (candidate) =>
+              !candidate.dead &&
+              candidate.hp < candidate.maxHp - 0.5 &&
+              Math.abs(candidate.lane - plant.lane) <= 1 &&
+              Math.abs(candidate.col - plant.col) <= 1,
+          )
+          .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+
+        if (!target) {
+          plant.actionTimer = 0.45;
+          return;
+        }
+
+        target.hp = Math.min(target.maxHp, target.hp + def.heal);
+        setHealth(target);
+        target.el.classList.add("is-healing");
+        window.setTimeout(() => target.el?.classList.remove("is-healing"), 480);
+        createImpact(target.col + 0.5, target.lane, "is-heal");
+        plant.actionTimer = def.actionEvery;
+        playTone(920, 0.11, "sine", 0.022);
+        return;
+      }
+
       const hasTarget = state.enemies.some(
         (enemy) => !enemy.dead && enemy.lane === plant.lane && enemy.x > plant.col - 0.05,
       );
@@ -292,7 +410,16 @@
         return;
       }
 
-      spawnProjectile(plant, plant.type === "frostfern");
+      if (plant.type === "frostfern") {
+        spawnProjectile(plant, { kind: "frost" });
+      } else if (plant.type === "burstberry") {
+        spawnProjectile(plant, { kind: "burst" });
+      } else if (plant.type === "twinstar") {
+        spawnProjectile(plant, { kind: "twin", yOffset: -0.1 });
+        spawnProjectile(plant, { kind: "twin", xOffset: -0.22, yOffset: 0.1 });
+      } else {
+        spawnProjectile(plant);
+      }
       plant.actionTimer = def.actionEvery;
     });
   }
@@ -304,7 +431,7 @@
       enemy.slowTime = Math.max(0, enemy.slowTime - dt);
       enemy.el.classList.toggle("is-slowed", enemy.slowTime > 0);
 
-      const target = state.plants
+      let target = state.plants
         .filter(
           (plant) =>
             !plant.dead &&
@@ -314,13 +441,26 @@
         )
         .sort((a, b) => b.col - a.col)[0];
 
+      if (target?.type === "thorntrap") {
+        triggerTrap(target, enemy);
+        target = null;
+      }
+
+      if (enemy.dead) continue;
+      const speedFactor = enemy.slowTime > 0 ? 0.54 : 1;
+
       if (target) {
+        enemy.el.classList.add("is-attacking");
+        enemy.attackPhase = (enemy.attackPhase + dt * 3.4) % 2;
+        setWalkFrame(enemy, enemy.attackPhase < 1 ? 0 : 2);
         target.hp -= def.damage * dt;
         target.el.classList.add("is-damaged");
         setHealth(target);
         if (target.hp <= 0) destroyPlant(target, true);
       } else {
-        const speedFactor = enemy.slowTime > 0 ? 0.54 : 1;
+        enemy.el.classList.remove("is-attacking");
+        enemy.walkPhase = (enemy.walkPhase + dt * def.stepRate * speedFactor) % WALK_FRAMES.length;
+        setWalkFrame(enemy, Math.floor(enemy.walkPhase));
         enemy.x -= def.speed * speedFactor * dt;
         enemy.el.style.left = `${(enemy.x / COLS) * 100}%`;
       }
@@ -332,7 +472,7 @@
   function updateProjectiles(dt) {
     for (const projectile of state.projectiles) {
       if (projectile.dead) continue;
-      projectile.x += 3.05 * dt;
+      projectile.x += projectile.speed * dt;
       projectile.el.style.left = `${(projectile.x / COLS) * 100}%`;
 
       const hit = state.enemies
@@ -346,7 +486,21 @@
         .sort((a, b) => a.x - b.x)[0];
 
       if (hit) {
-        damageEnemy(hit, projectile.damage, projectile.frost);
+        if (projectile.kind === "burst") {
+          const nearby = state.enemies.filter(
+            (enemy) =>
+              !enemy.dead &&
+              enemy.id !== hit.id &&
+              Math.abs(enemy.lane - hit.lane) <= 1 &&
+              Math.abs(enemy.x - hit.x) <= 0.88,
+          );
+          createImpact(hit.x + 0.45, hit.lane, "is-burst");
+          damageEnemy(hit, projectile.damage, false);
+          nearby.forEach((enemy) => damageEnemy(enemy, projectile.splash, false));
+          playTone(170, 0.12, "sawtooth", 0.026);
+        } else {
+          damageEnemy(hit, projectile.damage, projectile.kind === "frost");
+        }
         projectile.dead = true;
         projectile.el.remove();
       } else if (projectile.x > COLS + 0.4) {
@@ -376,7 +530,7 @@
 
   function spawnEnemy(type, lane) {
     const def = ENEMIES[type];
-    const element = createSpriteEntity("enemy", def.atlas, "assets/invaders.png");
+    const element = createSpriteEntity("enemy", WALK_FRAMES[0], def.sheet);
     const enemy = {
       id: nextId++,
       type,
@@ -385,34 +539,73 @@
       hp: def.maxHp,
       maxHp: def.maxHp,
       slowTime: 0,
+      walkPhase: Math.random() * WALK_FRAMES.length,
+      walkFrame: -1,
+      attackPhase: 0,
       dead: false,
       el: element.root,
+      spriteCrop: element.crop,
       healthFill: element.healthFill,
     };
+    element.root.classList.add(`enemy-${type}`);
     element.root.style.top = `${lane * 20}%`;
     element.root.style.left = `${(enemy.x / COLS) * 100}%`;
     element.root.setAttribute("aria-hidden", "true");
     entityLayer.append(element.root);
     state.enemies.push(enemy);
+    setWalkFrame(enemy, Math.floor(enemy.walkPhase));
   }
 
-  function spawnProjectile(plant, frost) {
+  function spawnProjectile(plant, options = {}) {
+    const { kind = "seed", xOffset = 0, yOffset = 0 } = options;
+    const def = PLANTS[plant.type];
     const element = document.createElement("span");
-    element.className = `projectile${frost ? " is-frost" : ""}`;
+    element.className = `projectile${kind === "frost" ? " is-frost" : ""}${
+      kind === "burst" ? " is-burst" : ""
+    }${kind === "twin" ? " is-twin" : ""}`;
     const projectile = {
       id: nextId++,
       lane: plant.lane,
-      x: plant.col + 0.82,
-      damage: PLANTS[plant.type].damage,
-      frost,
+      x: plant.col + 0.82 + xOffset,
+      damage: def.damage,
+      splash: def.splash || 0,
+      speed: kind === "burst" ? 2.72 : kind === "twin" ? 3.35 : 3.05,
+      kind,
       dead: false,
       el: element,
     };
     element.style.left = `${(projectile.x / COLS) * 100}%`;
-    element.style.top = `${((plant.lane + 0.48) / ROWS) * 100}%`;
+    element.style.top = `${((plant.lane + 0.48 + yOffset) / ROWS) * 100}%`;
     entityLayer.append(element);
     state.projectiles.push(projectile);
-    playTone(frost ? 760 : 610, 0.045, "sine", 0.015);
+    const frequency = kind === "frost" ? 760 : kind === "burst" ? 250 : kind === "twin" ? 690 : 610;
+    playTone(frequency, 0.045, "sine", 0.015);
+  }
+
+  function setWalkFrame(enemy, frame) {
+    const nextFrame = ((frame % WALK_FRAMES.length) + WALK_FRAMES.length) % WALK_FRAMES.length;
+    if (enemy.walkFrame === nextFrame) return;
+    enemy.spriteCrop.classList.remove(...WALK_FRAMES);
+    enemy.spriteCrop.classList.add(WALK_FRAMES[nextFrame]);
+    enemy.walkFrame = nextFrame;
+  }
+
+  function triggerTrap(trap, enemy) {
+    if (trap.dead || enemy.dead) return;
+    trap.el.classList.add("is-triggered");
+    createImpact(trap.col + 0.5, trap.lane, "is-thorn");
+    damageEnemy(enemy, PLANTS.thorntrap.trapDamage, false);
+    destroyPlant(trap, false);
+    playTone(205, 0.11, "square", 0.024);
+  }
+
+  function createImpact(x, lane, kind) {
+    const impact = document.createElement("span");
+    impact.className = `impact ${kind}`;
+    impact.style.left = `${(x / COLS) * 100}%`;
+    impact.style.top = `${((lane + 0.5) / ROWS) * 100}%`;
+    entityLayer.append(impact);
+    window.setTimeout(() => impact.remove(), 520);
   }
 
   function spawnEnergyDrop(x, y, fromPlant = false) {
@@ -467,7 +660,7 @@
     healthFill.className = "health-fill";
     healthTrack.append(healthFill);
     root.append(crop, healthTrack);
-    return { root, healthFill };
+    return { root, crop, healthFill };
   }
 
   function placePlant(type, lane, col) {
@@ -485,7 +678,7 @@
       return;
     }
 
-    const element = createSpriteEntity("plant", def.atlas, "assets/defenders.png");
+    const element = createSpriteEntity("plant", def.atlas, def.sheet);
     const plant = {
       id: nextId++,
       type,
@@ -493,7 +686,7 @@
       col,
       hp: def.maxHp,
       maxHp: def.maxHp,
-      actionTimer: type === "sunbloom" ? 4 : 0.25,
+      actionTimer: type === "sunbloom" ? 4 : type === "dewleaf" ? 2.4 : 0.25,
       dead: false,
       el: element.root,
       healthFill: element.healthFill,
@@ -626,7 +819,7 @@
       showOverlay({
         kicker: "防线失守",
         title: "怪物闯进了花园",
-        text: `本局得分 ${state.score}。优先补齐每一行的豆荚炮，再用木灵卫拖住巨怪。`,
+        text: `本局得分 ${state.score}。用荆棘垫处理漏怪，让露珠叶在中间持续治疗防线。`,
         button: "重新挑战",
         tips: `<span><b>${state.kills}</b> 击退数量</span><span><b>${state.score}</b> 本局得分</span><span><b>${state.best}</b> 最佳纪录</span>`,
         action: resetGame,
@@ -848,9 +1041,9 @@
   showOverlay({
     kicker: "暮色降临",
     title: "守住今晚的花园",
-    text: "收集发光种子，选择守卫，再轻点草地完成布置。挡住三波暮影怪物就能获胜。",
+    text: "收集发光种子，组合八种守卫，再轻点草地完成布置。挡住三波、六类暮影怪物就能获胜。",
     button: "开始守卫",
-    tips: "<span><b>1–4</b> 选择守卫</span><span><b>空格</b> 暂停</span><span><b>✦</b> 点击收集</span>",
+    tips: "<span><b>1–8</b> 选择守卫</span><span><b>空格</b> 暂停</span><span><b>✦</b> 点击收集</span>",
     action: resetGame,
   });
 })();

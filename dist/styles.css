@@ -522,12 +522,15 @@ button {
 
 .enemy-entity {
   z-index: 3;
-  transform: translateY(var(--step, 0px));
 }
 
 .enemy-entity .sprite-crop {
-  animation: enemy-step 0.56s ease-in-out infinite alternate;
+  transition: filter 120ms ease;
 }
+
+.enemy-stonebrute .sprite-crop { inset: -5%; }
+.enemy-lanternbug .sprite-crop { inset: 6%; }
+.enemy-acornram .sprite-crop { inset: -2%; }
 
 .entity.is-hit .sprite-crop {
   filter: brightness(1.8) saturate(0.35) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.36));
@@ -535,6 +538,14 @@ button {
 
 .enemy-entity.is-slowed .sprite-crop {
   filter: hue-rotate(146deg) saturate(1.25) brightness(1.18) drop-shadow(0 0 7px rgba(108, 229, 255, 0.68));
+}
+
+.plant-entity.is-healing .sprite-crop {
+  animation: healing-glow 480ms ease-out;
+}
+
+.plant-entity.is-triggered .sprite-crop {
+  filter: brightness(1.8) saturate(1.35) drop-shadow(0 0 12px rgba(229, 123, 255, 0.88));
 }
 
 .health-track {
@@ -584,6 +595,57 @@ button {
 .projectile.is-frost {
   background: radial-gradient(circle at 35% 32%, #ffffff 0 12%, #8feeff 36%, #398cd9 75%);
   box-shadow: 0 0 10px rgba(103, 231, 255, 0.88), inset -2px -2px 3px rgba(17, 76, 143, 0.4);
+}
+
+.projectile.is-burst {
+  width: 3.5%;
+  background: radial-gradient(circle at 33% 28%, #fff5b0 0 9%, #ff6358 29%, #b7133f 72%);
+  box-shadow: 0 0 12px rgba(255, 81, 75, 0.9), inset -2px -2px 4px rgba(98, 5, 32, 0.55);
+}
+
+.projectile.is-twin {
+  width: 2.3%;
+  background: radial-gradient(circle at 35% 32%, #fffbdc 0 12%, #58f3df 35%, #218fc5 74%);
+  box-shadow: 0 0 9px rgba(75, 240, 223, 0.82), inset -2px -2px 3px rgba(19, 83, 131, 0.45);
+}
+
+.impact {
+  position: absolute;
+  z-index: 8;
+  width: 5%;
+  aspect-ratio: 1;
+  border: 3px solid rgba(255, 231, 142, 0.86);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.25);
+  animation: impact-pop 500ms ease-out forwards;
+}
+
+.impact::after {
+  content: "";
+  position: absolute;
+  inset: 20%;
+  border-radius: inherit;
+  background: currentColor;
+  box-shadow: 0 0 18px currentColor;
+}
+
+.impact.is-burst {
+  width: 15%;
+  color: #ff6b4e;
+  border-color: rgba(255, 202, 89, 0.92);
+}
+
+.impact.is-thorn {
+  width: 9%;
+  color: #db6cff;
+  border-color: rgba(235, 132, 255, 0.9);
+}
+
+.impact.is-heal {
+  width: 9%;
+  color: #66f7e3;
+  border-color: rgba(171, 255, 239, 0.92);
 }
 
 .energy-drop {
@@ -791,9 +853,16 @@ button {
   50% { transform: translateY(-2.5%) scale(1.02); }
 }
 
-@keyframes enemy-step {
-  from { transform: translateY(-2%) rotate(-1deg); }
-  to { transform: translateY(3%) rotate(1deg); }
+@keyframes healing-glow {
+  0% { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.36)); }
+  45% { filter: brightness(1.28) drop-shadow(0 0 12px rgba(94, 255, 224, 0.9)); }
+  100% { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.36)); }
+}
+
+@keyframes impact-pop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.25); }
+  24% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.65); }
 }
 
 @keyframes energy-float {
